@@ -3,9 +3,7 @@ package com.example.project100.di
 import android.content.Context
 import androidx.room.Room
 import com.example.project100.data.local.AppDatabase
-import com.example.project100.data.local.dao.PunishmentDao
-import com.example.project100.data.local.dao.UserProfileDao
-import com.example.project100.data.local.dao.WorkoutDao
+import com.example.project100.data.local.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,4 +33,10 @@ object DatabaseModule {
 
     @Provides
     fun provideUserProfileDao(database: AppDatabase): UserProfileDao = database.userProfileDao()
+
+    @Provides
+    fun provideBodyMetricsDao(database: AppDatabase): BodyMetricsDao = database.bodyMetricsDao()
+
+    @Provides
+    fun provideSettingsDao(database: AppDatabase): SettingsDao = database.settingsDao()
 }

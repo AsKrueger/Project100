@@ -1,14 +1,10 @@
 package com.example.project100.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,8 +12,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.project100.ui.components.*
 import com.example.project100.ui.theme.NeonBlue
+import com.example.project100.ui.theme.WarningRed
 import com.example.project100.viewmodel.TrainingViewModel
+import java.util.Locale
 
 @Composable
 fun TrainingScreen(
@@ -28,118 +27,241 @@ fun TrainingScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .background(Color.Transparent)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Text(
-                text = "DAILY QUEST",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White
-            )
-            Text(
-                text = "ACTIVE MISSION: PHYSICAL CONDITIONING",
-                style = MaterialTheme.typography.labelSmall,
-                color = NeonBlue
-            )
+            SystemHeader(title = "PROJECT100")
         }
 
         item {
-            ExerciseCounter(
+            Column {
+                Text(
+                    text = "OPERATIONAL STATUS",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonBlue,
+                    fontSize = 10.sp
+                )
+                Text(
+                    text = "TRAINING_PROTOCOL_B_v2.0",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Black
+                )
+            }
+        }
+
+        item {
+            ExerciseTrackerItem(
+                index = "01",
                 label = "PUSH-UPS",
-                current = workout.pushUps,
-                goal = 100,
-                onAdd = { viewModel.updatePushUps(it) }
+                current = workout.pushUps.toDouble(),
+                goal = 100.0,
+                onAdd = { viewModel.updatePushUps(it.toInt()) }
             )
         }
 
         item {
-            ExerciseCounter(
+            ExerciseTrackerItem(
+                index = "02",
                 label = "SIT-UPS",
-                current = workout.sitUps,
-                goal = 100,
-                onAdd = { viewModel.updateSitUps(it) }
+                current = workout.sitUps.toDouble(),
+                goal = 100.0,
+                onAdd = { viewModel.updateSitUps(it.toInt()) }
             )
         }
 
         item {
-            ExerciseCounter(
+            ExerciseTrackerItem(
+                index = "03",
                 label = "SQUATS",
-                current = workout.squats,
-                goal = 100,
-                onAdd = { viewModel.updateSquats(it) }
+                current = workout.squats.toDouble(),
+                goal = 100.0,
+                onAdd = { viewModel.updateSquats(it.toInt()) }
             )
         }
 
         item {
-            ExerciseCounter(
-                label = "RUNNING (KM)",
-                current = workout.runningKm.toInt(),
-                goal = 10,
+            ExerciseTrackerItem(
+                index = "04",
+                label = "10KM RUN",
+                current = workout.runningKm,
+                goal = 10.0,
+                unit = "KM",
                 isDecimal = true,
-                onAdd = { viewModel.updateRunning(it.toDouble()) }
+                onAdd = { viewModel.updateRunning(it) }
             )
         }
-        
+
         item {
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-    }
-}
-
-@Composable
-fun ExerciseCounter(
-    label: String,
-    current: Int,
-    goal: Int,
-    isDecimal: Boolean = false,
-    onAdd: (Int) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-            .border(1.dp, NeonBlue.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(label, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(
-                text = "$current / $goal",
-                color = NeonBlue,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+            TrainingMetricsPanel(
+                completion = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
             )
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            TrainingButton(text = "+1", onClick = { onAdd(1) }, modifier = Modifier.weight(1f))
-            TrainingButton(text = "+10", onClick = { onAdd(10) }, modifier = Modifier.weight(1f))
-            TrainingButton(text = "-1", onClick = { onAdd(-1) }, modifier = Modifier.weight(1f))
+
+        item {
+            VitalAlertBanner()
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun TrainingButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(4.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = NeonBlue
-        ),
-        border = androidx.compose.foundation.BorderStroke(1.dp, NeonBlue.copy(alpha = 0.5f))
+fun ExerciseTrackerItem(
+    index: String,
+    label: String,
+    current: Double,
+    goal: Double,
+    unit: String = "",
+    isDecimal: Boolean = false,
+    onAdd: (Double) -> Unit
+) {
+    var manualValue by remember { mutableStateOf("") }
+
+    SystemPanel(
+        modifier = Modifier.fillMaxWidth(),
+        showCorners = true
     ) {
-        Text(text, fontSize = 12.sp)
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$index // $label",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonBlue,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "TARGET: ${if (isDecimal) "%.2f".format(Locale.US, goal) else goal.toInt()} $unit",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isDecimal) "%.2f".format(Locale.US, current) else current.toInt().toString(),
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        SystemButton(
+                            text = if (isDecimal) "+0.1" else "+1",
+                            onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
+                            modifier = Modifier.width(60.dp)
+                        )
+                        // Icon button for training style
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(NeonBlue)
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                           // Icon placeholder
+                        }
+                    }
+                    SystemButton(
+                        text = if (isDecimal) "+1.0" else "+10",
+                        onClick = { onAdd(if (isDecimal) 1.0 else 10.0) },
+                        modifier = Modifier.width(60.dp),
+                        containerColor = NeonBlue.copy(alpha = 0.2f),
+                        contentColor = NeonBlue
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Progress bar
+            val progress = (current / goal).toFloat().coerceIn(0f, 1f)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(Color.DarkGray)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .fillMaxHeight()
+                        .background(NeonBlue)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SystemTextField(
+                    value = manualValue,
+                    onValueChange = { manualValue = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = "MANUAL_ENTRY"
+                )
+                SystemButton(
+                    text = "SET",
+                    onClick = {
+                        manualValue.toDoubleOrNull()?.let { 
+                            onAdd(it - current) 
+                            manualValue = ""
+                        }
+                    },
+                    containerColor = Color.DarkGray,
+                    contentColor = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun VitalAlertBanner() {
+    SystemPanel(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = WarningRed.copy(alpha = 0.5f),
+        showCorners = true
+    ) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("!", color = WarningRed, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(8.dp))
+                GlitchText(
+                    text = "VITAL_ALERT",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = WarningRed,
+                    isCritical = true
+                )
+            }
+            Text(
+                text = "HYDRATION_RESERVES_LOW. CONSUME 500ML LIQUID IMMEDIATELY.",
+                color = Color.White,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            SystemButton(
+                text = "ACKNOWLEDGE",
+                onClick = { },
+                containerColor = WarningRed.copy(alpha = 0.2f),
+                contentColor = WarningRed,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
