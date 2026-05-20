@@ -12,7 +12,6 @@ import com.example.project100.data.local.entity.UserProfileEntity
 import com.example.project100.data.local.entity.WorkoutEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDate
 
 @HiltWorker
@@ -35,7 +34,7 @@ class DailyResetWorker @AssistedInject constructor(
 
         val burpeesDebt = missingPushUps + missingSitUps + missingSquats + (missingKm * 10).toInt()
         
-        val currentProfile = userProfileDao.getUserProfile().firstOrNull() ?: UserProfileEntity()
+        val currentProfile = userProfileDao.getUserProfile() ?: UserProfileEntity()
 
         if (burpeesDebt > 0) {
             punishmentDao.insertPunishment(

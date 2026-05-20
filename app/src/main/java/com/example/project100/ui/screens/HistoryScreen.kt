@@ -180,7 +180,7 @@ fun calculateEfficiency(workout: WorkoutEntity): Float {
     val p1 = (workout.pushUps / 100f).coerceIn(0f, 1f)
     val p2 = (workout.sitUps / 100f).coerceIn(0f, 1f)
     val p3 = (workout.squats / 100f).coerceIn(0f, 1f)
-    val p4 = (workout.runningKm / 10f).coerceIn(0f, 1f).toFloat()
+    val p4 = (workout.runningKm.toFloat() / 10f).coerceIn(0f, 1f)
     return (p1 + p2 + p3 + p4) / 4f
 }
 

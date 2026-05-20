@@ -19,6 +19,48 @@ import com.example.project100.viewmodel.TrainingViewModel
 import java.util.Locale
 
 @Composable
+fun TrainingMetricsPanel(completion: Float) {
+    SystemPanel(modifier = Modifier.fillMaxWidth()) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "TOTAL_COMPLETION",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "${(completion * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = NeonBlue,
+                    fontWeight = FontWeight.Black
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { completion },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = NeonBlue,
+                trackColor = NeonBlue.copy(alpha = 0.1f)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "SYSTEM_OPTIMIZATION: ${if (completion >= 1f) "OPTIMAL" else "IN_PROGRESS"}",
+                style = MaterialTheme.typography.labelSmall,
+                color = if (completion >= 1f) Color.Green else Color.Gray,
+                fontSize = 9.sp
+            )
+        }
+    }
+}
+
+@Composable
 fun TrainingScreen(
     viewModel: TrainingViewModel = hiltViewModel()
 ) {
@@ -163,16 +205,14 @@ fun ExerciseTrackerItem(
                             onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
                             modifier = Modifier.width(60.dp)
                         )
-                        // Icon button for training style
+                        // Icon placeholder
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
                                 .background(NeonBlue)
                                 .padding(8.dp),
                             contentAlignment = Alignment.Center
-                        ) {
-                           // Icon placeholder
-                        }
+                        ) { }
                     }
                     SystemButton(
                         text = if (isDecimal) "+1.0" else "+10",

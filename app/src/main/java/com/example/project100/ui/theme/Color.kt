@@ -6,6 +6,9 @@ val BlackBackground = Color(0xFF050505)
 val SurfaceDark = Color(0xFF0A0A0A)
 val CardBackground = Color(0xFF121212)
 
+val Black80 = Color(0xFF050505)
+val DarkGray80 = Color(0xFF0A0A0A)
+
 val NeonBlue = Color(0xFF00F0FF)
 val ElectricPurple = Color(0xFFBC00FF)
 val WarningRed = Color(0xFFFF0033)
