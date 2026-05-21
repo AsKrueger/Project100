@@ -1,5 +1,6 @@
 package com.example.project100.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,11 +8,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.project100.system.calculateTotalProgress
 import com.example.project100.ui.components.*
 import com.example.project100.ui.theme.NeonBlue
 import com.example.project100.ui.theme.WarningRed
@@ -66,85 +70,91 @@ fun TrainingScreen(
 ) {
     val workout by viewModel.todayWorkout.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            SystemHeader(title = "PROJECT100")
-        }
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF050505))) {
+        GridBackground()
+        
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                SystemHeader(title = "PROJECT100")
+            }
 
-        item {
-            Column {
-                Text(
-                    text = "OPERATIONAL STATUS",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = NeonBlue,
-                    fontSize = 10.sp
-                )
-                Text(
-                    text = "TRAINING_PROTOCOL_B_v2.0",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    fontWeight = FontWeight.Black
+            item {
+                Column {
+                    Text(
+                        text = "OPERATIONAL STATUS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = NeonBlue,
+                        fontSize = 10.sp
+                    )
+                    Text(
+                        text = "TRAINING_PROTOCOL",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            item {
+                ExerciseTrackerItem(
+                    index = "01",
+                    label = "PUSH-UPS",
+                    current = workout.pushUps.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updatePushUps(it.toInt()) }
                 )
             }
-        }
 
-        item {
-            ExerciseTrackerItem(
-                index = "01",
-                label = "PUSH-UPS",
-                current = workout.pushUps.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updatePushUps(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "02",
+                    label = "SIT-UPS",
+                    current = workout.sitUps.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updateSitUps(it.toInt()) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "02",
-                label = "SIT-UPS",
-                current = workout.sitUps.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updateSitUps(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "03",
+                    label = "SQUATS",
+                    current = workout.squats.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updateSquats(it.toInt()) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "03",
-                label = "SQUATS",
-                current = workout.squats.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updateSquats(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "04",
+                    label = "10KM RUN",
+                    current = workout.runningKm,
+                    goal = 10.0,
+                    unit = "KM",
+                    isDecimal = true,
+                    onAdd = { viewModel.updateRunning(it) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "04",
-                label = "10KM RUN",
-                current = workout.runningKm,
-                goal = 10.0,
-                unit = "KM",
-                isDecimal = true,
-                onAdd = { viewModel.updateRunning(it) }
-            )
-        }
+            item {
+                TrainingMetricsPanel(
+                    completion = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
+                )
+            }
 
-        item {
-            TrainingMetricsPanel(
-                completion = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
-            )
-        }
-
-        item {
-            VitalAlertBanner()
-            Spacer(modifier = Modifier.height(24.dp))
+            item {
+                VitalAlertBanner(
+                    currentMl = workout.waterMl,
+                    onAddWater = { viewModel.updateWater(it) }
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -199,25 +209,15 @@ fun ExerciseTrackerItem(
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SystemButton(
-                            text = if (isDecimal) "+0.1" else "+1",
-                            onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
-                            modifier = Modifier.width(60.dp)
-                        )
-                        // Icon placeholder
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(NeonBlue)
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) { }
-                    }
                     SystemButton(
-                        text = if (isDecimal) "+1.0" else "+10",
+                        text = if (isDecimal) "+100M" else "+1",
+                        onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
+                        modifier = Modifier.width(80.dp)
+                    )
+                    SystemButton(
+                        text = if (isDecimal) "+1KM" else "+10",
                         onClick = { onAdd(if (isDecimal) 1.0 else 10.0) },
-                        modifier = Modifier.width(60.dp),
+                        modifier = Modifier.width(80.dp),
                         containerColor = NeonBlue.copy(alpha = 0.2f),
                         contentColor = NeonBlue
                     )
@@ -272,36 +272,135 @@ fun ExerciseTrackerItem(
 }
 
 @Composable
-fun VitalAlertBanner() {
+fun VitalAlertBanner(
+    currentMl: Int,
+    onAddWater: (Int) -> Unit
+) {
+    val targetMl = 3000
+    val isLow = currentMl < targetMl
+    val themeColor = if (isLow) WarningRed else NeonBlue
+
     SystemPanel(
         modifier = Modifier.fillMaxWidth(),
-        borderColor = WarningRed.copy(alpha = 0.5f),
+        borderColor = themeColor.copy(alpha = 0.5f),
         showCorners = true
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("!", color = WarningRed, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                GlitchText(
-                    text = "VITAL_ALERT",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = WarningRed,
-                    isCritical = true
+                // Tech Water Glass Icon
+                Canvas(modifier = Modifier.size(32.dp)) {
+                    val w = size.width
+                    val h = size.height
+                    val glassPath = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.2f, h * 0.1f)
+                        lineTo(w * 0.8f, h * 0.1f)
+                        lineTo(w * 0.75f, h * 0.9f)
+                        lineTo(w * 0.25f, h * 0.9f)
+                        close()
+                    }
+                    drawPath(glassPath, themeColor, style = Stroke(width = 1.5.dp.toPx()))
+                    
+                    val fillPercent = (currentMl.toFloat() / targetMl).coerceIn(0f, 1f)
+                    if (fillPercent > 0) {
+                        val waterHeight = h * 0.75f * fillPercent
+                        drawRect(
+                            color = themeColor.copy(alpha = 0.4f),
+                            topLeft = Offset(w * 0.3f, h * 0.85f - waterHeight),
+                            size = androidx.compose.ui.geometry.Size(w * 0.4f, waterHeight)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (isLow) "!" else "✓",
+                            color = if (isLow) WarningRed else Color.Green,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        GlitchText(
+                            text = if (isLow) "VITAL_ALERT" else "SYSTEM_STABILIZED",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = themeColor,
+                            isCritical = isLow
+                        )
+                    }
+                    Text(
+                        text = "HYDRATION: ${currentMl}ML / ${targetMl}ML",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Add Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SystemButton(
+                    text = "+250ML",
+                    onClick = { onAddWater(250) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
+                )
+                SystemButton(
+                    text = "+500ML",
+                    onClick = { onAddWater(500) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
+                )
+                SystemButton(
+                    text = "+1L",
+                    onClick = { onAddWater(1000) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
                 )
             }
-            Text(
-                text = "HYDRATION_RESERVES_LOW. CONSUME 500ML LIQUID IMMEDIATELY.",
-                color = Color.White,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            SystemButton(
-                text = "ACKNOWLEDGE",
-                onClick = { },
-                containerColor = WarningRed.copy(alpha = 0.2f),
-                contentColor = WarningRed,
-                modifier = Modifier.fillMaxWidth()
-            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Subtract Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SystemButton(
+                    text = "-250ML",
+                    onClick = { onAddWater(-250) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+                SystemButton(
+                    text = "-500ML",
+                    onClick = { onAddWater(-500) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+                SystemButton(
+                    text = "-1L",
+                    onClick = { onAddWater(-1000) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+            }
         }
     }
 }

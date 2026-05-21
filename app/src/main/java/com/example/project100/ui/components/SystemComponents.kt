@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
@@ -18,6 +19,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.project100.ui.theme.NeonBlue
+import com.example.project100.ui.theme.WarningRed
+
+@Composable
+fun GridBackground(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val gridSpacing = 40.dp.toPx()
+        val color = Color.White.copy(alpha = 0.03f)
+        
+        // Vertical lines
+        var x = 0f
+        while (x < size.width) {
+            drawLine(
+                color = color,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = 1f
+            )
+            x += gridSpacing
+        }
+        
+        // Horizontal lines
+        var y = 0f
+        while (y < size.height) {
+            drawLine(
+                color = color,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = 1f
+            )
+            y += gridSpacing
+        }
+    }
+}
 
 @Composable
 fun SystemHeader(title: String) {
@@ -29,25 +63,35 @@ fun SystemHeader(title: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            // Shield icon placeholder
             Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .background(NeonBlue)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+                    .size(18.dp)
+                    .border(1.dp, NeonBlue)
+                    .padding(4.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize().background(NeonBlue.copy(alpha = 0.5f)))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.White,
+                color = NeonBlue,
                 letterSpacing = 2.sp,
                 fontWeight = FontWeight.Black
             )
         }
         
-        Canvas(modifier = Modifier.size(20.dp)) {
-            val strokeWidth = 2.dp.toPx()
-            drawCircle(color = NeonBlue, radius = 4f, style = Stroke(strokeWidth))
-            drawCircle(color = NeonBlue.copy(alpha = 0.5f), radius = 10f, style = Stroke(strokeWidth))
+        // Wifi/Signal icon placeholder
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            repeat(3) { i ->
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .height((4 + (i * 4)).dp)
+                        .background(NeonBlue.copy(alpha = if(i==2) 1f else 0.4f))
+                )
+            }
         }
     }
 }
@@ -57,55 +101,68 @@ fun SystemMessageBanner(message: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, NeonBlue.copy(alpha = 0.5f))
-            .background(NeonBlue.copy(alpha = 0.05f))
-            .padding(8.dp)
+            .border(1.dp, WarningRed.copy(alpha = 0.3f))
+            .background(WarningRed.copy(alpha = 0.05f))
+            .padding(12.dp)
     ) {
-        Text(
-            text = "SYSTEM MESSAGE: $message",
-            style = MaterialTheme.typography.labelSmall,
-            color = NeonBlue,
-            fontWeight = FontWeight.Bold,
-            fontSize = 10.sp
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "⚠",
+                color = WarningRed,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "SYSTEM MESSAGE: $message",
+                style = MaterialTheme.typography.labelSmall,
+                color = WarningRed.copy(alpha = 0.8f),
+                fontWeight = FontWeight.Bold,
+                fontSize = 9.sp,
+                letterSpacing = 0.5.sp
+            )
+        }
     }
 }
 
 @Composable
 fun SystemPanel(
     modifier: Modifier = Modifier,
-    borderColor: Color = NeonBlue.copy(alpha = 0.2f),
+    borderColor: Color = Color.White.copy(alpha = 0.1f),
+    contentColor: Color = Color.Transparent,
     showCorners: Boolean = true,
+    cornerColor: Color = NeonBlue,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .border(1.dp, borderColor)
-            .background(Color.Black.copy(alpha = 0.5f))
+            .background(contentColor)
     ) {
         if (showCorners) {
             Canvas(modifier = Modifier.matchParentSize()) {
-                val size = 10.dp.toPx()
-                val stroke = 2.dp.toPx()
+                val s = 8.dp.toPx()
+                val sw = 1.5.dp.toPx()
                 
+                // Top-left
                 drawPath(
                     path = Path().apply {
-                        moveTo(0f, size)
+                        moveTo(0f, s)
                         lineTo(0f, 0f)
-                        lineTo(size, 0f)
+                        lineTo(s, 0f)
                     },
-                    color = borderColor.copy(alpha = 1f),
-                    style = Stroke(stroke)
+                    color = cornerColor,
+                    style = Stroke(sw)
                 )
                 
+                // Bottom-right
                 drawPath(
                     path = Path().apply {
-                        moveTo(this@Canvas.size.width - size, this@Canvas.size.height)
-                        lineTo(this@Canvas.size.width, this@Canvas.size.height)
-                        lineTo(this@Canvas.size.width, this@Canvas.size.height - size)
+                        moveTo(size.width - s, size.height)
+                        lineTo(size.width, size.height)
+                        lineTo(size.width, size.height - s)
                     },
-                    color = borderColor.copy(alpha = 1f),
-                    style = Stroke(stroke)
+                    color = cornerColor,
+                    style = Stroke(sw)
                 )
             }
         }
@@ -122,23 +179,41 @@ fun SystemButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     containerColor: Color = NeonBlue,
-    contentColor: Color = Color.Black
+    contentColor: Color = Color.Black,
+    isOutline: Boolean = false
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(40.dp),
-        shape = MaterialTheme.shapes.extraSmall,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        )
-    ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.Black,
-            fontSize = 12.sp,
-            letterSpacing = 1.sp
-        )
+    if (isOutline) {
+        OutlinedButton(
+            onClick = onClick,
+            modifier = modifier.height(45.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(2.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, containerColor),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = containerColor)
+        ) {
+            Text(
+                text = text,
+                fontWeight = FontWeight.Black,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp
+            )
+        }
+    } else {
+        Button(
+            onClick = onClick,
+            modifier = modifier.height(45.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(2.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = containerColor,
+                contentColor = contentColor
+            )
+        ) {
+            Text(
+                text = text,
+                fontWeight = FontWeight.Black,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp
+            )
+        }
     }
 }
 

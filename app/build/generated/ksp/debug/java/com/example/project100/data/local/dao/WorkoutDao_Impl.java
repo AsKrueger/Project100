@@ -45,7 +45,7 @@ public final class WorkoutDao_Impl implements WorkoutDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `workouts` (`date`,`pushUps`,`sitUps`,`squats`,`runningKm`,`isCompleted`) VALUES (?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `workouts` (`date`,`pushUps`,`sitUps`,`squats`,`runningKm`,`waterMl`,`isCompleted`) VALUES (?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -61,8 +61,9 @@ public final class WorkoutDao_Impl implements WorkoutDao {
         statement.bindLong(3, entity.getSitUps());
         statement.bindLong(4, entity.getSquats());
         statement.bindDouble(5, entity.getRunningKm());
+        statement.bindLong(6, entity.getWaterMl());
         final int _tmp_1 = entity.isCompleted() ? 1 : 0;
-        statement.bindLong(6, _tmp_1);
+        statement.bindLong(7, _tmp_1);
       }
     };
   }
@@ -110,6 +111,7 @@ public final class WorkoutDao_Impl implements WorkoutDao {
           final int _cursorIndexOfSitUps = CursorUtil.getColumnIndexOrThrow(_cursor, "sitUps");
           final int _cursorIndexOfSquats = CursorUtil.getColumnIndexOrThrow(_cursor, "squats");
           final int _cursorIndexOfRunningKm = CursorUtil.getColumnIndexOrThrow(_cursor, "runningKm");
+          final int _cursorIndexOfWaterMl = CursorUtil.getColumnIndexOrThrow(_cursor, "waterMl");
           final int _cursorIndexOfIsCompleted = CursorUtil.getColumnIndexOrThrow(_cursor, "isCompleted");
           final WorkoutEntity _result;
           if (_cursor.moveToFirst()) {
@@ -134,11 +136,13 @@ public final class WorkoutDao_Impl implements WorkoutDao {
             _tmpSquats = _cursor.getInt(_cursorIndexOfSquats);
             final double _tmpRunningKm;
             _tmpRunningKm = _cursor.getDouble(_cursorIndexOfRunningKm);
+            final int _tmpWaterMl;
+            _tmpWaterMl = _cursor.getInt(_cursorIndexOfWaterMl);
             final boolean _tmpIsCompleted;
             final int _tmp_3;
             _tmp_3 = _cursor.getInt(_cursorIndexOfIsCompleted);
             _tmpIsCompleted = _tmp_3 != 0;
-            _result = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpIsCompleted);
+            _result = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpWaterMl,_tmpIsCompleted);
           } else {
             _result = null;
           }
@@ -173,6 +177,7 @@ public final class WorkoutDao_Impl implements WorkoutDao {
           final int _cursorIndexOfSitUps = CursorUtil.getColumnIndexOrThrow(_cursor, "sitUps");
           final int _cursorIndexOfSquats = CursorUtil.getColumnIndexOrThrow(_cursor, "squats");
           final int _cursorIndexOfRunningKm = CursorUtil.getColumnIndexOrThrow(_cursor, "runningKm");
+          final int _cursorIndexOfWaterMl = CursorUtil.getColumnIndexOrThrow(_cursor, "waterMl");
           final int _cursorIndexOfIsCompleted = CursorUtil.getColumnIndexOrThrow(_cursor, "isCompleted");
           final WorkoutEntity _result;
           if (_cursor.moveToFirst()) {
@@ -197,11 +202,13 @@ public final class WorkoutDao_Impl implements WorkoutDao {
             _tmpSquats = _cursor.getInt(_cursorIndexOfSquats);
             final double _tmpRunningKm;
             _tmpRunningKm = _cursor.getDouble(_cursorIndexOfRunningKm);
+            final int _tmpWaterMl;
+            _tmpWaterMl = _cursor.getInt(_cursorIndexOfWaterMl);
             final boolean _tmpIsCompleted;
             final int _tmp_3;
             _tmp_3 = _cursor.getInt(_cursorIndexOfIsCompleted);
             _tmpIsCompleted = _tmp_3 != 0;
-            _result = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpIsCompleted);
+            _result = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpWaterMl,_tmpIsCompleted);
           } else {
             _result = null;
           }
@@ -233,6 +240,7 @@ public final class WorkoutDao_Impl implements WorkoutDao {
           final int _cursorIndexOfSitUps = CursorUtil.getColumnIndexOrThrow(_cursor, "sitUps");
           final int _cursorIndexOfSquats = CursorUtil.getColumnIndexOrThrow(_cursor, "squats");
           final int _cursorIndexOfRunningKm = CursorUtil.getColumnIndexOrThrow(_cursor, "runningKm");
+          final int _cursorIndexOfWaterMl = CursorUtil.getColumnIndexOrThrow(_cursor, "waterMl");
           final int _cursorIndexOfIsCompleted = CursorUtil.getColumnIndexOrThrow(_cursor, "isCompleted");
           final List<WorkoutEntity> _result = new ArrayList<WorkoutEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -258,11 +266,13 @@ public final class WorkoutDao_Impl implements WorkoutDao {
             _tmpSquats = _cursor.getInt(_cursorIndexOfSquats);
             final double _tmpRunningKm;
             _tmpRunningKm = _cursor.getDouble(_cursorIndexOfRunningKm);
+            final int _tmpWaterMl;
+            _tmpWaterMl = _cursor.getInt(_cursorIndexOfWaterMl);
             final boolean _tmpIsCompleted;
             final int _tmp_2;
             _tmp_2 = _cursor.getInt(_cursorIndexOfIsCompleted);
             _tmpIsCompleted = _tmp_2 != 0;
-            _item = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpIsCompleted);
+            _item = new WorkoutEntity(_tmpDate,_tmpPushUps,_tmpSitUps,_tmpSquats,_tmpRunningKm,_tmpWaterMl,_tmpIsCompleted);
             _result.add(_item);
           }
           return _result;

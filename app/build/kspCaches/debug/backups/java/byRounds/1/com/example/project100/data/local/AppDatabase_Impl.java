@@ -52,13 +52,13 @@ public final class AppDatabase_Impl extends AppDatabase {
     final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `workouts` (`date` TEXT NOT NULL, `pushUps` INTEGER NOT NULL, `sitUps` INTEGER NOT NULL, `squats` INTEGER NOT NULL, `runningKm` REAL NOT NULL, `isCompleted` INTEGER NOT NULL, PRIMARY KEY(`date`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `workouts` (`date` TEXT NOT NULL, `pushUps` INTEGER NOT NULL, `sitUps` INTEGER NOT NULL, `squats` INTEGER NOT NULL, `runningKm` REAL NOT NULL, `waterMl` INTEGER NOT NULL, `isCompleted` INTEGER NOT NULL, PRIMARY KEY(`date`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `punishments` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `dateGenerated` TEXT NOT NULL, `totalBurpees` INTEGER NOT NULL, `completedBurpees` INTEGER NOT NULL, `isCleared` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `user_profile` (`id` INTEGER NOT NULL, `username` TEXT NOT NULL, `profilePictureUri` TEXT, `currentStreak` INTEGER NOT NULL, `highestStreak` INTEGER NOT NULL, `currentRank` TEXT NOT NULL, `totalPunishmentBurpeesCompleted` INTEGER NOT NULL, `joinDate` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `body_metrics` (`date` TEXT NOT NULL, `weight` REAL NOT NULL, `bodyFat` REAL NOT NULL, `chest` REAL NOT NULL, `waist` REAL NOT NULL, `arms` REAL NOT NULL, `legs` REAL NOT NULL, PRIMARY KEY(`date`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `settings` (`id` INTEGER NOT NULL, `isSoundEnabled` INTEGER NOT NULL, `isNotificationsEnabled` INTEGER NOT NULL, `preferredUnit` TEXT NOT NULL, `lastSyncTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'af913c99a3fc69dfb56f9a7afd3d258c')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07889c430a8908d6441c04ceb5a2747b')");
       }
 
       @Override
@@ -111,12 +111,13 @@ public final class AppDatabase_Impl extends AppDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsWorkouts = new HashMap<String, TableInfo.Column>(6);
+        final HashMap<String, TableInfo.Column> _columnsWorkouts = new HashMap<String, TableInfo.Column>(7);
         _columnsWorkouts.put("date", new TableInfo.Column("date", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsWorkouts.put("pushUps", new TableInfo.Column("pushUps", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsWorkouts.put("sitUps", new TableInfo.Column("sitUps", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsWorkouts.put("squats", new TableInfo.Column("squats", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsWorkouts.put("runningKm", new TableInfo.Column("runningKm", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsWorkouts.put("waterMl", new TableInfo.Column("waterMl", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsWorkouts.put("isCompleted", new TableInfo.Column("isCompleted", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysWorkouts = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesWorkouts = new HashSet<TableInfo.Index>(0);
@@ -194,7 +195,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "af913c99a3fc69dfb56f9a7afd3d258c", "9b4cc233a1d85bc862b6b53cb58d60dc");
+    }, "07889c430a8908d6441c04ceb5a2747b", "389c4c7fba869048e05cfbae04b4d49c");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

@@ -11,5 +11,6 @@ data class WorkoutEntity(
     val sitUps: Int = 0,
     val squats: Int = 0,
     val runningKm: Double = 0.0,
+    val waterMl: Int = 0,
     val isCompleted: Boolean = false
 )

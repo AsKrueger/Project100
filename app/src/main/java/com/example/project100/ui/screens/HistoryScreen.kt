@@ -1,20 +1,21 @@
 package com.example.project100.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import com.example.project100.ui.components.SystemPanel
 import com.example.project100.ui.theme.NeonBlue
 import com.example.project100.ui.theme.SuccessGreen
 import com.example.project100.ui.theme.WarningRed
+import com.example.project100.viewmodel.HistorySlot
 import com.example.project100.viewmodel.HistoryViewModel
 import com.example.project100.viewmodel.MainViewModel
 import java.time.format.DateTimeFormatter
@@ -35,142 +37,223 @@ fun HistoryScreen(
     historyViewModel: HistoryViewModel = hiltViewModel(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val history by historyViewModel.filteredWorkouts.collectAsState(initial = emptyList())
+    val slots by historyViewModel.historySlots.collectAsState()
     val currentFilter by historyViewModel.filter.collectAsState()
     val userProfile by mainViewModel.userProfile.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            SystemHeader(title = "PROJECT100")
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF050505))) {
+        // Subtle background decoration
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(
+                color = NeonBlue.copy(alpha = 0.03f),
+                radius = size.width,
+                center = Offset(size.width, 0f)
+            )
         }
 
-        item {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Column {
-                        Text(
-                            text = "QUEST LOG",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White,
-                            fontWeight = FontWeight.Black
-                        )
-                        Text(
-                            text = "ANALYTICS ENGINE v4.02.1",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray,
-                            fontSize = 8.sp
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("CURRENT RANK", fontSize = 8.sp, color = Color.Gray)
-                        Text(
-                            userProfile?.currentRank ?: "E",
-                            fontSize = 10.sp,
-                            color = NeonBlue,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                SystemHeader(title = "PROJECT100")
             }
-        }
 
-        item {
-            HistoryFilters(
-                selectedFilter = currentFilter,
-                onFilterSelected = { historyViewModel.setFilter(it) }
-            )
-        }
+            item {
+                HeaderSection(userProfile?.currentRank ?: "E")
+            }
 
-        item {
-            EfficiencyChart(history)
-        }
+            item {
+                HistoryFilters(
+                    selectedFilter = currentFilter,
+                    onFilterSelected = { historyViewModel.setFilter(it) }
+                )
+            }
 
-        item {
-            ActiveStreakPanel(streak = userProfile?.currentStreak ?: 0)
-        }
+            item {
+                EfficiencyChart(slots, currentFilter)
+            }
 
-        item {
-            Text(
-                text = "TEMPORAL LOGS",
-                style = MaterialTheme.typography.labelSmall,
-                color = NeonBlue,
-                fontWeight = FontWeight.Bold
-            )
-        }
+            item {
+                ActiveStreakPanel(streak = userProfile?.currentStreak ?: 0)
+            }
 
-        items(history) { workout ->
-            TemporalLogItem(workout)
-        }
+            item {
+                LogsHeader()
+            }
 
-        item {
-            MilestoneTimeline()
-            Spacer(modifier = Modifier.height(24.dp))
+            items(slots) { slot ->
+                TemporalSlotItem(slot, currentFilter)
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(40.dp))
+            }
         }
     }
 }
 
 @Composable
-fun EfficiencyChart(workouts: List<WorkoutEntity>) {
-    SystemPanel(modifier = Modifier.fillMaxWidth().height(180.dp)) {
+private fun HeaderSection(rank: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Column {
+            Text(
+                text = "QUEST LOG",
+                fontSize = 32.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = "ANALYTICS_SYSTEM_v4.02",
+                style = MaterialTheme.typography.labelSmall,
+                color = NeonBlue.copy(alpha = 0.5f),
+                fontSize = 11.sp,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text("CLEARANCE", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text(
+                rank,
+                fontSize = 24.sp,
+                color = NeonBlue,
+                fontWeight = FontWeight.Black
+            )
+        }
+    }
+}
+
+@Composable
+private fun LogsHeader() {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+        Box(modifier = Modifier.size(width = 3.dp, height = 18.dp).background(NeonBlue))
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "CHRONOLOGICAL LOGS",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+            letterSpacing = 2.sp
+        )
+    }
+}
+
+@Composable
+fun EfficiencyChart(slots: List<HistorySlot>, filter: String) {
+    SystemPanel(
+        modifier = Modifier.fillMaxWidth().height(250.dp),
+        borderColor = NeonBlue.copy(alpha = 0.15f)
+    ) {
         Column {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("COMPLETION EFFICIENCY", fontSize = 10.sp, color = NeonBlue, fontWeight = FontWeight.Bold)
+                Column {
+                    Text("COMPLETION EFFICIENCY", fontSize = 12.sp, color = NeonBlue, fontWeight = FontWeight.Bold)
+                    Text("DATA_VISUALIZATION_ACTIVE", fontSize = 9.sp, color = Color.Gray)
+                }
+                val workouts = slots.mapNotNull { it.workout }
                 val avg = if (workouts.isEmpty()) 0f else workouts.map { 
                     calculateEfficiency(it)
                 }.average().toFloat()
-                Text("AVG: ${(avg * 100).toInt()}%", fontSize = 10.sp, color = Color.Gray)
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("AVG_SCORE", fontSize = 9.sp, color = Color.Gray)
+                    Text("${(avg * 100).toInt()}%", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Black)
+                }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            
+            Spacer(modifier = Modifier.height(20.dp))
             
             Box(modifier = Modifier.fillMaxSize()) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val lineCount = 5
-                    for (i in 0..lineCount) {
-                        val y = size.height * (i.toFloat() / lineCount)
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.05f),
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = 1f
-                        )
+                // Enhanced grid background
+                Canvas(modifier = Modifier.fillMaxSize().alpha(0.1f)) {
+                    val lines = 5
+                    for (i in 0 until lines) {
+                        val y = size.height * (i.toFloat() / (lines - 1))
+                        drawLine(Color.White, Offset(0f, y), Offset(size.width, y), 1.dp.toPx())
                     }
                 }
                 
+                val scrollState = rememberScrollState()
                 Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .horizontalScroll(scrollState)
+                        .padding(bottom = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(if (filter == "MONTH") 10.dp else 20.dp),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    val displayWorkouts = workouts.takeLast(7)
-                    displayWorkouts.forEach { workout ->
-                        val efficiency = calculateEfficiency(workout)
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val displayList = slots.reversed() // ViewModel sends it ordered for list, chart usually needs chronological if reversed was used.
+                    
+                    displayList.forEach { slot ->
+                        val efficiency = slot.workout?.let { calculateEfficiency(it) } ?: 0f
+                        val isFuture = slot.isFuture
+                        
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxHeight().width(if (filter == "MONTH") 14.dp else 40.dp)
+                        ) {
                             Box(
-                                modifier = Modifier
-                                    .width(20.dp)
-                                    .fillMaxHeight(efficiency.coerceAtLeast(0.1f))
-                                    .background(NeonBlue.copy(alpha = 0.5f))
-                                    .border(1.dp, NeonBlue.copy(alpha = 0.8f))
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
+                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                // Glow effect for active bars
+                                if (efficiency > 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .width(if (filter == "MONTH") 8.dp else 20.dp)
+                                            .fillMaxHeight(efficiency.coerceAtLeast(0.05f))
+                                            .blur(10.dp)
+                                            .background(NeonBlue.copy(alpha = 0.25f))
+                                    )
+                                }
+                                
+                                // Data Bar
+                                Box(
+                                    modifier = Modifier
+                                        .width(if (filter == "MONTH") 10.dp else 28.dp)
+                                        .fillMaxHeight(efficiency.coerceAtLeast(0.04f))
+                                        .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                colors = if (slot.workout != null) 
+                                                    listOf(NeonBlue, NeonBlue.copy(alpha = 0.1f))
+                                                else if (isFuture)
+                                                    listOf(Color.White.copy(alpha = 0.05f), Color.Transparent)
+                                                else
+                                                    listOf(Color.DarkGray.copy(alpha = 0.2f), Color.Transparent)
+                                            )
+                                        )
+                                        .then(
+                                            if (slot.workout != null) 
+                                                Modifier.border(0.5.dp, NeonBlue.copy(alpha = 0.4f), RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                                            else Modifier
+                                        )
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(10.dp))
+                            
                             Text(
-                                workout.date.format(DateTimeFormatter.ofPattern("E")).uppercase(),
-                                fontSize = 8.sp,
-                                color = Color.Gray
+                                text = slot.label.uppercase(),
+                                fontSize = 9.sp,
+                                color = if (slot.workout != null) Color.White else Color.Gray.copy(alpha = 0.6f),
+                                fontWeight = if (slot.workout != null) FontWeight.Bold else FontWeight.Normal,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                             )
                         }
                     }
                 }
+                
+                // Final visual indicator line at 100%
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(NeonBlue.copy(alpha = 0.05f)).align(Alignment.TopCenter))
             }
         }
     }
@@ -187,27 +270,38 @@ fun calculateEfficiency(workout: WorkoutEntity): Float {
 @Composable
 fun HistoryFilters(selectedFilter: String, onFilterSelected: (String) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxWidth().height(45.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         listOf("WEEK", "MONTH", "YEAR").forEach { filter ->
             val isSelected = filter == selectedFilter
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .border(1.dp, if (isSelected) NeonBlue else Color.DarkGray.copy(alpha = 0.5f))
-                    .background(if (isSelected) NeonBlue.copy(alpha = 0.1f) else Color.Transparent)
-                    .clickable { onFilterSelected(filter) }
-                    .padding(vertical = 8.dp),
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (isSelected) NeonBlue.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.02f))
+                    .border(
+                        1.dp, 
+                        if (isSelected) NeonBlue else Color.White.copy(alpha = 0.05f),
+                        RoundedCornerShape(2.dp)
+                    )
+                    .clickable { onFilterSelected(filter) },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = filter,
-                    fontSize = 10.sp,
-                    color = if (isSelected) NeonBlue else Color.Gray,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = filter,
+                        fontSize = 12.sp,
+                        color = if (isSelected) NeonBlue else Color.Gray,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    if (isSelected) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Box(modifier = Modifier.size(width = 20.dp, height = 1.dp).background(NeonBlue))
+                    }
+                }
             }
         }
     }
@@ -215,34 +309,48 @@ fun HistoryFilters(selectedFilter: String, onFilterSelected: (String) -> Unit) {
 
 @Composable
 fun ActiveStreakPanel(streak: Int) {
-    SystemPanel(modifier = Modifier.fillMaxWidth()) {
+    SystemPanel(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = Color.White.copy(alpha = 0.08f)
+    ) {
         Column {
-            Text("ACTIVE STREAK", fontSize = 10.sp, color = Color.Gray)
-            Row(verticalAlignment = Alignment.Bottom) {
+            Text("STREAK_STABILITY", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(vertical = 4.dp)) {
                 Text(
-                    text = "$streak",
-                    fontSize = 42.sp,
+                    text = String.format("%02d", streak),
+                    fontSize = 56.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("DAYS", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("CONSECUTIVE_DAYS", fontSize = 13.sp, color = NeonBlue, modifier = Modifier.padding(bottom = 12.dp), fontWeight = FontWeight.Bold)
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("NEXT MILESTONE: 30 DAYS", fontSize = 8.sp, color = NeonBlue, fontWeight = FontWeight.Bold)
+            
             Spacer(modifier = Modifier.height(8.dp))
             
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("NEXT MILESTONE: 30 DAYS", fontSize = 10.sp, color = Color.Gray)
+                Text("${(streak/30f * 100).toInt()}%", fontSize = 10.sp, color = NeonBlue, fontWeight = FontWeight.Bold)
+            }
+            
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            // Modern progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
-                    .background(Color.DarkGray.copy(alpha = 0.3f))
+                    .background(Color.White.copy(alpha = 0.05f))
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth((streak / 30f).coerceIn(0f, 1f))
                         .fillMaxHeight()
-                        .background(NeonBlue)
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(NeonBlue.copy(alpha = 0.4f), NeonBlue)
+                            )
+                        )
                 )
             }
         }
@@ -250,49 +358,71 @@ fun ActiveStreakPanel(streak: Int) {
 }
 
 @Composable
-fun TemporalLogItem(workout: WorkoutEntity) {
-    val formatter = DateTimeFormatter.ofPattern("dd.MMM")
-    val isSuccess = workout.pushUps >= 100 && workout.sitUps >= 100 && workout.squats >= 100 && workout.runningKm >= 10.0
-    val statusText = if (isSuccess) "SUCCESS" else "FAILURE"
-    val statusColor = if (isSuccess) SuccessGreen else WarningRed
-    val protocolName = when {
-        workout.pushUps >= 100 && workout.sitUps >= 100 -> "IRON PROTOCOL"
-        workout.runningKm >= 10.0 -> "VOID MEDITATION"
-        else -> "DATA SYNTHESIS"
-    }
+fun TemporalSlotItem(slot: HistorySlot, filter: String) {
+    val workout = slot.workout
+    val isSuccess = workout != null && workout.pushUps >= 100 && workout.sitUps >= 100 && workout.squats >= 100 && workout.runningKm >= 10.0
+    val isFuture = slot.isFuture
+    
+    val statusText = if (isFuture) "PENDING" else if (workout == null) "NO_DATA" else if (isSuccess) "SUCCESS" else "FAILURE"
+    val statusColor = if (isFuture) Color.Gray.copy(alpha = 0.3f) else if (workout == null) Color.Gray else if (isSuccess) SuccessGreen else WarningRed
+    
+    val dateDisplay = if (filter == "YEAR") slot.date.format(DateTimeFormatter.ofPattern("MMM")) 
+                      else slot.date.format(DateTimeFormatter.ofPattern("dd.MMM"))
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp)
+            .alpha(if (isFuture) 0.4f else 1f),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = workout.date.format(formatter).uppercase(),
-            fontSize = 12.sp,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.width(60.dp)
-        )
+        // Date Column
+        Column(modifier = Modifier.width(75.dp)) {
+            Text(
+                text = dateDisplay.uppercase(),
+                fontSize = 15.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Black,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            )
+            Text(
+                text = slot.date.dayOfWeek.name.take(3),
+                fontSize = 10.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.Bold
+            )
+        }
         
-        Text(
-            text = if (isSuccess) protocolName else "SYSTEM REFRESH",
-            fontSize = 12.sp,
-            color = Color.White,
-            modifier = Modifier.weight(1f),
-            fontWeight = FontWeight.Medium
-        )
+        // Protocol Info
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (workout != null && isSuccess) "IRON PROTOCOL" else if (workout != null) "RECOVERY MODE" else if (isFuture) "FUTURE_TASK" else "IDLE_SYSTEM",
+                fontSize = 14.sp,
+                color = if (workout != null) Color.White else Color.Gray,
+                fontWeight = FontWeight.Bold
+            )
+            if (workout != null) {
+                Text(
+                    text = "EFFICIENCY: ${(calculateEfficiency(workout) * 100).toInt()}%",
+                    fontSize = 10.sp,
+                    color = NeonBlue.copy(alpha = 0.8f),
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
+        // Status Badge
         Box(
             modifier = Modifier
-                .border(1.dp, statusColor.copy(alpha = 0.5f))
-                .background(statusColor.copy(alpha = 0.1f))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .border(1.dp, statusColor.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
+                .background(statusColor.copy(alpha = 0.05f))
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
                 text = statusText,
                 color = statusColor,
-                fontSize = 8.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp
             )
@@ -300,111 +430,20 @@ fun TemporalLogItem(workout: WorkoutEntity) {
         
         Spacer(modifier = Modifier.width(12.dp))
         
+        // Circular Status Icon
         Box(
             modifier = Modifier
-                .size(20.dp)
-                .border(1.dp, statusColor, androidx.compose.foundation.shape.CircleShape),
+                .size(28.dp)
+                .border(1.dp, statusColor.copy(alpha = 0.4f), CircleShape)
+                .background(if (isSuccess) SuccessGreen.copy(alpha = 0.1f) else Color.Transparent, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (isSuccess) "✓" else "✕",
+                text = if (isSuccess) "✓" else if (workout != null) "✕" else if (isFuture) "○" else "—",
                 color = statusColor,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Black
             )
-        }
-    }
-}
-
-@Composable
-fun MilestoneTimeline() {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(8.dp).background(NeonBlue))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "MILESTONE TIMELINE",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        MilestoneItem(
-            day = "10 DAY STREAK",
-            title = "\"Acolyte Protocol Initiated\"",
-            date = "OCT 04",
-            isCompleted = true
-        )
-        MilestoneItem(
-            day = "20 DAY STREAK",
-            title = "RANK UP: VANGUARD-III",
-            date = "OCT 24",
-            isCompleted = true,
-            isRankUp = true
-        )
-        MilestoneItem(
-            day = "30 DAY STREAK",
-            title = "\"Ascension Event Alpha\"",
-            date = "LOCKED",
-            isCompleted = false
-        )
-    }
-}
-
-@Composable
-fun MilestoneItem(day: String, title: String, date: String, isCompleted: Boolean, isRankUp: Boolean = false) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .border(2.dp, if (isCompleted) NeonBlue else Color.DarkGray, androidx.compose.foundation.shape.CircleShape)
-                    .background(if (isCompleted) NeonBlue else Color.Transparent, androidx.compose.foundation.shape.CircleShape)
-            )
-            Box(modifier = Modifier.width(1.dp).height(60.dp).background(if (isCompleted) NeonBlue.copy(alpha = 0.3f) else Color.DarkGray))
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        SystemPanel(
-            modifier = Modifier.weight(1f),
-            borderColor = if (isCompleted) NeonBlue.copy(alpha = 0.3f) else Color.DarkGray.copy(alpha = 0.5f),
-            showCorners = false
-        ) {
-            Column {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        text = day,
-                        fontSize = 10.sp,
-                        color = if (isCompleted) NeonBlue else Color.Gray,
-                        fontWeight = FontWeight.Black
-                    )
-                    Text(date, fontSize = 9.sp, color = Color.Gray)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    color = if (isCompleted) Color.White else Color.Gray,
-                    fontWeight = FontWeight.Bold
-                )
-                if (isRankUp) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "UNLOCKED: SYSTEM OVERRIDE PERMISSION",
-                        fontSize = 9.sp,
-                        color = Color(0xFFBC00FF),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
         }
     }
 }
