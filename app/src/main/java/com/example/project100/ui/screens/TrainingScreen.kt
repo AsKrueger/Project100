@@ -203,25 +203,15 @@ fun ExerciseTrackerItem(
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SystemButton(
-                            text = if (isDecimal) "+0.1" else "+1",
-                            onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
-                            modifier = Modifier.width(60.dp)
-                        )
-                        // Icon placeholder
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(NeonBlue)
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
-                        ) { }
-                    }
                     SystemButton(
-                        text = if (isDecimal) "+1.0" else "+10",
+                        text = if (isDecimal) "+100M" else "+1",
+                        onClick = { onAdd(if (isDecimal) 0.1 else 1.0) },
+                        modifier = Modifier.width(80.dp)
+                    )
+                    SystemButton(
+                        text = if (isDecimal) "+1KM" else "+10",
                         onClick = { onAdd(if (isDecimal) 1.0 else 10.0) },
-                        modifier = Modifier.width(60.dp),
+                        modifier = Modifier.width(80.dp),
                         containerColor = NeonBlue.copy(alpha = 0.2f),
                         contentColor = NeonBlue
                     )
