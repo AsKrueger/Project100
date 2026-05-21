@@ -89,7 +89,7 @@ fun TrainingScreen(
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "TRAINING_PROTOCOL_B_v2.0",
+                        text = "TRAINING_PROTOCOL",
                         style = MaterialTheme.typography.headlineSmall,
                         color = Color.White,
                         fontWeight = FontWeight.Black
