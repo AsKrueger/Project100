@@ -420,28 +420,28 @@ public final class DaggerProject100App_HiltComponents_SingletonC {
     private static final class LazyClassKeyProvider {
       static String com_example_project100_viewmodel_HistoryViewModel = "com.example.project100.viewmodel.HistoryViewModel";
 
-      static String com_example_project100_viewmodel_MainViewModel = "com.example.project100.viewmodel.MainViewModel";
-
       static String com_example_project100_viewmodel_TrainingViewModel = "com.example.project100.viewmodel.TrainingViewModel";
+
+      static String com_example_project100_viewmodel_BodyMetricsViewModel = "com.example.project100.viewmodel.BodyMetricsViewModel";
 
       static String com_example_project100_viewmodel_PunishmentViewModel = "com.example.project100.viewmodel.PunishmentViewModel";
 
-      static String com_example_project100_viewmodel_BodyMetricsViewModel = "com.example.project100.viewmodel.BodyMetricsViewModel";
+      static String com_example_project100_viewmodel_MainViewModel = "com.example.project100.viewmodel.MainViewModel";
 
       @KeepFieldType
       HistoryViewModel com_example_project100_viewmodel_HistoryViewModel2;
 
       @KeepFieldType
-      MainViewModel com_example_project100_viewmodel_MainViewModel2;
+      TrainingViewModel com_example_project100_viewmodel_TrainingViewModel2;
 
       @KeepFieldType
-      TrainingViewModel com_example_project100_viewmodel_TrainingViewModel2;
+      BodyMetricsViewModel com_example_project100_viewmodel_BodyMetricsViewModel2;
 
       @KeepFieldType
       PunishmentViewModel com_example_project100_viewmodel_PunishmentViewModel2;
 
       @KeepFieldType
-      BodyMetricsViewModel com_example_project100_viewmodel_BodyMetricsViewModel2;
+      MainViewModel com_example_project100_viewmodel_MainViewModel2;
     }
   }
 
@@ -494,30 +494,30 @@ public final class DaggerProject100App_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_example_project100_viewmodel_HistoryViewModel = "com.example.project100.viewmodel.HistoryViewModel";
-
-      static String com_example_project100_viewmodel_BodyMetricsViewModel = "com.example.project100.viewmodel.BodyMetricsViewModel";
-
       static String com_example_project100_viewmodel_PunishmentViewModel = "com.example.project100.viewmodel.PunishmentViewModel";
 
-      static String com_example_project100_viewmodel_MainViewModel = "com.example.project100.viewmodel.MainViewModel";
+      static String com_example_project100_viewmodel_HistoryViewModel = "com.example.project100.viewmodel.HistoryViewModel";
 
       static String com_example_project100_viewmodel_TrainingViewModel = "com.example.project100.viewmodel.TrainingViewModel";
 
-      @KeepFieldType
-      HistoryViewModel com_example_project100_viewmodel_HistoryViewModel2;
+      static String com_example_project100_viewmodel_BodyMetricsViewModel = "com.example.project100.viewmodel.BodyMetricsViewModel";
 
-      @KeepFieldType
-      BodyMetricsViewModel com_example_project100_viewmodel_BodyMetricsViewModel2;
+      static String com_example_project100_viewmodel_MainViewModel = "com.example.project100.viewmodel.MainViewModel";
 
       @KeepFieldType
       PunishmentViewModel com_example_project100_viewmodel_PunishmentViewModel2;
 
       @KeepFieldType
-      MainViewModel com_example_project100_viewmodel_MainViewModel2;
+      HistoryViewModel com_example_project100_viewmodel_HistoryViewModel2;
 
       @KeepFieldType
       TrainingViewModel com_example_project100_viewmodel_TrainingViewModel2;
+
+      @KeepFieldType
+      BodyMetricsViewModel com_example_project100_viewmodel_BodyMetricsViewModel2;
+
+      @KeepFieldType
+      MainViewModel com_example_project100_viewmodel_MainViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
