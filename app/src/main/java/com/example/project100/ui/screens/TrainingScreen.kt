@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.project100.system.calculateTotalProgress
 import com.example.project100.ui.components.*
 import com.example.project100.ui.theme.NeonBlue
 import com.example.project100.ui.theme.WarningRed
@@ -66,85 +67,88 @@ fun TrainingScreen(
 ) {
     val workout by viewModel.todayWorkout.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            SystemHeader(title = "PROJECT100")
-        }
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF050505))) {
+        GridBackground()
+        
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                SystemHeader(title = "PROJECT100")
+            }
 
-        item {
-            Column {
-                Text(
-                    text = "OPERATIONAL STATUS",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = NeonBlue,
-                    fontSize = 10.sp
-                )
-                Text(
-                    text = "TRAINING_PROTOCOL_B_v2.0",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                    fontWeight = FontWeight.Black
+            item {
+                Column {
+                    Text(
+                        text = "OPERATIONAL STATUS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = NeonBlue,
+                        fontSize = 10.sp
+                    )
+                    Text(
+                        text = "TRAINING_PROTOCOL_B_v2.0",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            item {
+                ExerciseTrackerItem(
+                    index = "01",
+                    label = "PUSH-UPS",
+                    current = workout.pushUps.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updatePushUps(it.toInt()) }
                 )
             }
-        }
 
-        item {
-            ExerciseTrackerItem(
-                index = "01",
-                label = "PUSH-UPS",
-                current = workout.pushUps.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updatePushUps(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "02",
+                    label = "SIT-UPS",
+                    current = workout.sitUps.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updateSitUps(it.toInt()) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "02",
-                label = "SIT-UPS",
-                current = workout.sitUps.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updateSitUps(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "03",
+                    label = "SQUATS",
+                    current = workout.squats.toDouble(),
+                    goal = 100.0,
+                    onAdd = { viewModel.updateSquats(it.toInt()) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "03",
-                label = "SQUATS",
-                current = workout.squats.toDouble(),
-                goal = 100.0,
-                onAdd = { viewModel.updateSquats(it.toInt()) }
-            )
-        }
+            item {
+                ExerciseTrackerItem(
+                    index = "04",
+                    label = "10KM RUN",
+                    current = workout.runningKm,
+                    goal = 10.0,
+                    unit = "KM",
+                    isDecimal = true,
+                    onAdd = { viewModel.updateRunning(it) }
+                )
+            }
 
-        item {
-            ExerciseTrackerItem(
-                index = "04",
-                label = "10KM RUN",
-                current = workout.runningKm,
-                goal = 10.0,
-                unit = "KM",
-                isDecimal = true,
-                onAdd = { viewModel.updateRunning(it) }
-            )
-        }
+            item {
+                TrainingMetricsPanel(
+                    completion = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
+                )
+            }
 
-        item {
-            TrainingMetricsPanel(
-                completion = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
-            )
-        }
-
-        item {
-            VitalAlertBanner()
-            Spacer(modifier = Modifier.height(24.dp))
+            item {
+                VitalAlertBanner()
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }

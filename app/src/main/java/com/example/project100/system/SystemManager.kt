@@ -5,6 +5,9 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,9 +29,14 @@ class SystemManager @Inject constructor(
     }
 
     private fun calculateInitialDelay(): Long {
-        // Calculate delay until next 23:59
-        // Simplified: for demo/dev purposes, can be set shorter or just run daily
-        // Real implementation would target midnight
-        return 0L 
+        val now = LocalDateTime.now()
+        val resetTime = LocalTime.of(23, 59)
+        var nextReset = LocalDateTime.of(now.toLocalDate(), resetTime)
+
+        if (now.isAfter(nextReset)) {
+            nextReset = nextReset.plusDays(1)
+        }
+
+        return Duration.between(now, nextReset).toMillis()
     }
 }
