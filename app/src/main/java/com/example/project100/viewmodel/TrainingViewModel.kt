@@ -48,4 +48,11 @@ class TrainingViewModel @Inject constructor(
             repository.updateWorkout(current.copy(runningKm = (current.runningKm + delta).coerceAtLeast(0.0)))
         }
     }
+
+    fun updateWater(deltaMl: Int) {
+        viewModelScope.launch {
+            val current = todayWorkout.value
+            repository.updateWorkout(current.copy(waterMl = (current.waterMl + deltaMl).coerceAtLeast(0)))
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.project100.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,7 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -146,7 +149,10 @@ fun TrainingScreen(
             }
 
             item {
-                VitalAlertBanner()
+                VitalAlertBanner(
+                    currentMl = workout.waterMl,
+                    onAddWater = { viewModel.updateWater(it) }
+                )
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
@@ -266,36 +272,135 @@ fun ExerciseTrackerItem(
 }
 
 @Composable
-fun VitalAlertBanner() {
+fun VitalAlertBanner(
+    currentMl: Int,
+    onAddWater: (Int) -> Unit
+) {
+    val targetMl = 3000
+    val isLow = currentMl < targetMl
+    val themeColor = if (isLow) WarningRed else NeonBlue
+
     SystemPanel(
         modifier = Modifier.fillMaxWidth(),
-        borderColor = WarningRed.copy(alpha = 0.5f),
+        borderColor = themeColor.copy(alpha = 0.5f),
         showCorners = true
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("!", color = WarningRed, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                GlitchText(
-                    text = "VITAL_ALERT",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = WarningRed,
-                    isCritical = true
+                // Tech Water Glass Icon
+                Canvas(modifier = Modifier.size(32.dp)) {
+                    val w = size.width
+                    val h = size.height
+                    val glassPath = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.2f, h * 0.1f)
+                        lineTo(w * 0.8f, h * 0.1f)
+                        lineTo(w * 0.75f, h * 0.9f)
+                        lineTo(w * 0.25f, h * 0.9f)
+                        close()
+                    }
+                    drawPath(glassPath, themeColor, style = Stroke(width = 1.5.dp.toPx()))
+                    
+                    val fillPercent = (currentMl.toFloat() / targetMl).coerceIn(0f, 1f)
+                    if (fillPercent > 0) {
+                        val waterHeight = h * 0.75f * fillPercent
+                        drawRect(
+                            color = themeColor.copy(alpha = 0.4f),
+                            topLeft = Offset(w * 0.3f, h * 0.85f - waterHeight),
+                            size = androidx.compose.ui.geometry.Size(w * 0.4f, waterHeight)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (isLow) "!" else "✓",
+                            color = if (isLow) WarningRed else Color.Green,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        GlitchText(
+                            text = if (isLow) "VITAL_ALERT" else "SYSTEM_STABILIZED",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = themeColor,
+                            isCritical = isLow
+                        )
+                    }
+                    Text(
+                        text = "HYDRATION: ${currentMl}ML / ${targetMl}ML",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Add Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SystemButton(
+                    text = "+250ML",
+                    onClick = { onAddWater(250) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
+                )
+                SystemButton(
+                    text = "+500ML",
+                    onClick = { onAddWater(500) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
+                )
+                SystemButton(
+                    text = "+1L",
+                    onClick = { onAddWater(1000) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = themeColor.copy(alpha = 0.2f),
+                    contentColor = themeColor
                 )
             }
-            Text(
-                text = "HYDRATION_RESERVES_LOW. CONSUME 500ML LIQUID IMMEDIATELY.",
-                color = Color.White,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            SystemButton(
-                text = "ACKNOWLEDGE",
-                onClick = { },
-                containerColor = WarningRed.copy(alpha = 0.2f),
-                contentColor = WarningRed,
-                modifier = Modifier.fillMaxWidth()
-            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Subtract Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SystemButton(
+                    text = "-250ML",
+                    onClick = { onAddWater(-250) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+                SystemButton(
+                    text = "-500ML",
+                    onClick = { onAddWater(-500) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+                SystemButton(
+                    text = "-1L",
+                    onClick = { onAddWater(-1000) },
+                    modifier = Modifier.weight(1f),
+                    containerColor = Color.DarkGray.copy(alpha = 0.3f),
+                    contentColor = Color.Gray,
+                    isOutline = true
+                )
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ package com.example.project100.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -10,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -39,7 +37,6 @@ fun DashboardScreen(
     
     val totalProgress = calculateTotalProgress(workout.pushUps, workout.sitUps, workout.squats, workout.runningKm)
     
-    // Generate a message that only changes when progress changes or on launch
     val systemMessage = remember(totalProgress, isLocked) {
         SystemMessages.getMessageForProgress(totalProgress, isLocked)
     }
@@ -87,17 +84,6 @@ fun DashboardScreen(
                 )
             }
 
-            /* Hiding for now
-            item {
-                ActiveOperationsPanel()
-            }
-            
-            item {
-                UpgradePanel()
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-            */
-
             item {
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -120,7 +106,6 @@ fun RankPanel(rank: String) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Box(contentAlignment = Alignment.Center) {
-                // Background circle decoration
                 Canvas(modifier = Modifier.size(90.dp)) {
                     drawCircle(color = NeonBlue.copy(alpha = 0.1f), style = Stroke(1.dp.toPx()))
                 }
@@ -131,9 +116,7 @@ fun RankPanel(rank: String) {
             Text("RANK $rank", fontSize = 14.sp, color = NeonBlue, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
             
             Spacer(modifier = Modifier.height(16.dp))
-            // Progress bar below rank
             Box(modifier = Modifier.fillMaxWidth(0.7f).height(2.dp).background(Color.DarkGray)) {
-                // Simple visual filler based on rank
                 val fill = when(rank) {
                     "S" -> 1f
                     "A" -> 0.8f
@@ -158,7 +141,6 @@ fun OperationalStreakPanel(days: Int) {
             Text("DAYS", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 8.dp))
         }
         
-        // Segmented bar
         Row(
             modifier = Modifier.fillMaxWidth().height(6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -179,7 +161,6 @@ fun OperationalStreakPanel(days: Int) {
 @Composable
 fun MainSystemStatusRing(progress: Float) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = 10.dp)) {
-        // Tick marks background
         Canvas(modifier = Modifier.size(240.dp)) {
             val center = Offset(size.width / 2, size.height / 2)
             val radius = size.minDimension / 2
@@ -229,7 +210,7 @@ fun ActionButtonsRow() {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         SystemButton(
             text = "INITIATE PROTOCOL",
-            onClick = { /* TODO: Navigate to training */ },
+            onClick = { /* TODO */ },
             modifier = Modifier.weight(1f)
         )
         SystemButton(
@@ -273,92 +254,12 @@ fun StatItem(label: String, current: Int, goal: Int, color: Color, modifier: Mod
                     strokeWidth = 3.dp,
                     trackColor = color.copy(alpha = 0.1f)
                 )
-                // Small indicator dot
                 Box(modifier = Modifier.size(4.dp).background(color.copy(alpha = 0.8f), CircleShape))
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(label, fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 Text("$current/$goal$unit", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-}
-
-@Composable
-fun ActiveOperationsPanel() {
-    SystemPanel(modifier = Modifier.fillMaxWidth(), borderColor = Color.White.copy(alpha = 0.05f)) {
-        Column {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("ACTIVE OPERATIONS", fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
-                Text("LIVE_FEED_ON", fontSize = 9.sp, color = NeonBlue, fontWeight = FontWeight.Bold)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            val logs = listOf(
-                "[08:00] MORNING_CALIBRATION_COMPLETE" to NeonBlue,
-                "[12:45] NUTRITION_PROTOCOL_ACKNOWLEDGED" to NeonBlue,
-                "[18:22] CARDIO_DEFICIT_DETECTED. RECTIFY." to WarningRed
-            )
-            
-            logs.forEach { (log, color) ->
-                Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (color == WarningRed) {
-                        Box(modifier = Modifier.size(4.dp).background(WarningRed, CircleShape))
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
-                    Text(
-                        text = log,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        fontSize = 10.sp,
-                        color = color.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun UpgradePanel() {
-    SystemPanel(
-        modifier = Modifier.fillMaxWidth(),
-        borderColor = NeonBlue.copy(alpha = 0.2f),
-        contentColor = NeonBlue.copy(alpha = 0.02f)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // Technical visual graphic
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .border(1.dp, NeonBlue.copy(alpha = 0.3f))
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val sw = 1.dp.toPx()
-                    // Grid inside the box
-                    for(i in 1..4) {
-                        drawLine(NeonBlue.copy(0.1f), Offset(i * size.width/5, 0f), Offset(i * size.width/5, size.height), sw)
-                        drawLine(NeonBlue.copy(0.1f), Offset(0f, i * size.height/5), Offset(size.width, i * size.height/5), sw)
-                    }
-                    // Tech cross
-                    drawLine(NeonBlue.copy(0.3f), Offset(0f, 0f), Offset(size.width, size.height), sw)
-                    // Circle in middle
-                    drawCircle(NeonBlue.copy(0.2f), radius = size.width/4, style = Stroke(sw))
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text("UPGRADE AVAILABLE", fontWeight = FontWeight.Black, color = Color.White, fontSize = 12.sp)
-                Text("Unlock Advanced HUD Augmentations for Rank C.", color = Color.Gray, fontSize = 10.sp, lineHeight = 14.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                SystemButton(
-                    text = "DATA_VAULT_OPEN",
-                    onClick = { },
-                    modifier = Modifier.height(30.dp),
-                    containerColor = NeonBlue.copy(alpha = 0.2f),
-                    contentColor = NeonBlue
-                )
             }
         }
     }
