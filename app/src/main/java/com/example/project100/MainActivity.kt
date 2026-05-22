@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,10 +42,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         SystemBackgroundEffects()
-                        if (isLocked) {
+                        
+                        // El contenido principal siempre está debajo
+                        MainContent()
+
+                        // El panel de penalización aparece como un "floating overlay"
+                        AnimatedVisibility(
+                            visible = isLocked,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
                             PunishmentOverlay(debt = totalDebt)
-                        } else {
-                            MainContent()
                         }
                     }
                 }

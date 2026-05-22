@@ -1,9 +1,7 @@
 package com.example.project100.ui.screens
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +26,9 @@ fun PunishmentOverlay(
     debt: Int,
     viewModel: PunishmentViewModel = hiltViewModel()
 ) {
+    // IMPORTANTE: Recolectar el estado para que el ViewModel mantenga el flujo activo
+    val activePunishments by viewModel.activePunishments.collectAsState()
+    
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -43,7 +43,7 @@ fun PunishmentOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black.copy(alpha = 0.95f)), // Ligeramente transparente para efecto overlay
         contentAlignment = Alignment.Center
     ) {
         // Glitch/Emergency background effect
@@ -106,8 +106,7 @@ fun PunishmentOverlay(
                         text = "$debt",
                         color = Color.White,
                         fontSize = 80.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = MaterialTheme.typography.headlineLarge.fontFamily
+                        fontWeight = FontWeight.Black
                     )
                     
                     Text(
@@ -136,8 +135,12 @@ fun PunishmentOverlay(
             Spacer(modifier = Modifier.height(48.dp))
 
             SystemButton(
-                text = "REGISTER BURPEE COMPLETION",
-                onClick = { viewModel.completeBurpees(1) },
+                text = "REGISTER BURPEE COMPLETION (1)",
+                onClick = { 
+                    if (debt > 0) {
+                        viewModel.completeBurpees(1)
+                    }
+                },
                 containerColor = WarningRed,
                 contentColor = Color.White,
                 modifier = Modifier.fillMaxWidth().height(60.dp)
@@ -145,7 +148,6 @@ fun PunishmentOverlay(
 
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Terminal deco logs
             Text(
                 text = "> SECURE_LINK: TERMINAL_002    SYSTEM_STATUS: LOCKED",
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
